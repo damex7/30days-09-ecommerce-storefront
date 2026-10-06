@@ -6,6 +6,9 @@ import { ThemeToggle } from './ThemeToggle.jsx'
 import { Icon } from '../ui/Icon.jsx'
 import { cx } from '../../lib/cx.js'
 import { STORE_NAME } from '../../config.js'
+import { useStore } from '../../state/StoreContext.jsx'
+import { useUI } from '../../state/UIContext.jsx'
+import { CartDrawer } from '../cart/CartDrawer.jsx'
 
 const NAV = [
   { to: '/shop', label: 'Shop' },
@@ -64,8 +67,8 @@ export function Layout() {
 
           <div className="ml-auto flex items-center gap-0.5 md:ml-0">
             <ThemeToggle />
-            <HeaderLink to="/wishlist" icon="heart" label="Wishlist" />
-            <HeaderLink to="/cart" icon="bag" label="Cart" />
+            <WishlistLink />
+            <CartButton />
           </div>
         </div>
 
@@ -96,21 +99,54 @@ export function Layout() {
       </main>
 
       <Footer />
+      <CartDrawer />
     </div>
   )
 }
 
-function HeaderLink({ to, icon, label }) {
+/* The counts are part of the accessible name ("Cart, 3 items"); the badge itself is hidden from screen readers. */
+function CountBadge({ count }) {
+  if (!count) return null
+  return (
+    <span
+      aria-hidden="true"
+      className="absolute -top-0.5 -right-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-kola px-1 font-mono text-[11px] font-semibold text-on-kola"
+    >
+      {count > 99 ? '99+' : count}
+    </span>
+  )
+}
+
+function WishlistLink() {
+  const count = useStore().wishlist.length
   return (
     <NavLink
-      to={to}
+      to="/wishlist"
       className={({ isActive }) =>
         cx('relative grid size-11 place-items-center rounded-full transition-colors', isActive ? 'bg-white/15' : 'hover:bg-white/10')
       }
     >
-      <Icon name={icon} className="size-6" />
-      <span className="sr-only">{label}</span>
+      <Icon name="heart" className="size-6" />
+      <CountBadge count={count} />
+      <span className="sr-only">Wishlist{count ? `, ${count} saved` : ''}</span>
     </NavLink>
+  )
+}
+
+/** A button, not a link: it opens the cart drawer. The full cart page is one click further. */
+function CartButton() {
+  const count = useStore().cart.reduce((n, line) => n + line.qty, 0)
+  const { openCart } = useUI()
+  return (
+    <button
+      type="button"
+      onClick={() => openCart()}
+      className="relative grid size-11 place-items-center rounded-full transition-colors hover:bg-white/10"
+    >
+      <Icon name="bag" className="size-6" />
+      <CountBadge count={count} />
+      <span className="sr-only">Cart, {count === 1 ? '1 item' : `${count} items`}</span>
+    </button>
   )
 }
 

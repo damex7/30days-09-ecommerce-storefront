@@ -198,6 +198,17 @@
   }
 }
 
+/*
+  Pages with a sticky bottom bar on phones (cart, checkout) mark it with
+  data-sticky-bar; the page then leaves room at the end so the bar never
+  covers the last line of content or the footer.
+*/
+@media (width < 64rem) {
+  body:has([data-sticky-bar]) {
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

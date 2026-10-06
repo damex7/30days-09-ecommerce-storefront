@@ -1,7 +1,8 @@
-import { createContext, useContext } from 'react'
+import { createContext, useContext, useMemo } from 'react'
 import { usePersistedReducer } from '../hooks/usePersistedReducer.js'
 import { initialState, serializeStore, storeReducer } from './storeReducer.js'
 import { validateStore } from './validateStore.js'
+import { getCartTotals } from '../lib/pricing.js'
 import { STORAGE_PREFIX } from '../config.js'
 
 export const STORE_KEY = `${STORAGE_PREFIX}:store:v1`
@@ -44,3 +45,13 @@ export const useStoreLoadStatus = () => useContext(LoadStatusContext)
 /* Small selector hooks, so components ask for what they mean. */
 export const useCart = () => useStore().cart
 export const useIsWishlisted = (id) => useStore().wishlist.some((p) => p.id === id)
+
+/**
+ * Subtotal, discount, delivery and total, DERIVED from the cart every time.
+ * useMemo only skips the (cheap) maths when nothing it depends on changed.
+ * Pass the delivery state once it's known (checkout); without it, delivery is null.
+ */
+export function useCartTotals(deliveryState = null) {
+  const { cart, promoCode } = useStore()
+  return useMemo(() => getCartTotals({ cart, promoCode, state: deliveryState }), [cart, promoCode, deliveryState])
+}

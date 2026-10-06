@@ -35,6 +35,7 @@ export const ACTIONS = {
   SET_QUANTITY: 'cart/setQuantity',
   REMOVE_FROM_CART: 'cart/remove',
   UNDO_REMOVE: 'cart/undoRemove',
+  DISMISS_UNDO: 'cart/dismissUndo',
   CLEAR_CART: 'cart/clear',
   APPLY_PROMO: 'promo/apply',
   REMOVE_PROMO: 'promo/remove',
@@ -68,6 +69,7 @@ export const addToCart = (product, qty = 1) => ({ type: ACTIONS.ADD_TO_CART, pro
 export const setQuantity = (id, qty) => ({ type: ACTIONS.SET_QUANTITY, id, qty })
 export const removeFromCart = (id) => ({ type: ACTIONS.REMOVE_FROM_CART, id })
 export const undoRemove = () => ({ type: ACTIONS.UNDO_REMOVE })
+export const dismissUndo = () => ({ type: ACTIONS.DISMISS_UNDO })
 export const clearCart = () => ({ type: ACTIONS.CLEAR_CART })
 export const applyPromo = (code) => ({ type: ACTIONS.APPLY_PROMO, code })
 export const removePromo = () => ({ type: ACTIONS.REMOVE_PROMO })
@@ -132,6 +134,9 @@ export function storeReducer(state, action) {
       cart.splice(Math.min(removed.index, cart.length), 0, removed.line)
       return { ...state, cart, lastRemoved: null }
     }
+
+    case ACTIONS.DISMISS_UNDO:
+      return state.lastRemoved ? { ...state, lastRemoved: null } : state
 
     case ACTIONS.CLEAR_CART:
       return { ...state, cart: [], promoCode: null, lastRemoved: null }

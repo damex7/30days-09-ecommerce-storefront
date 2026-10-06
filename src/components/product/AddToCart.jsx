@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useCart, useStoreDispatch } from '../../state/StoreContext.jsx'
+import { useUI } from '../../state/UIContext.jsx'
 import { addToCart, addableQuantity, quantityInCart } from '../../state/storeReducer.js'
 import { QuantityPicker } from './QuantityPicker.jsx'
 import { WishlistButton } from './WishlistButton.jsx'
@@ -13,7 +14,8 @@ import { plural } from '../../lib/format.js'
   The reducer would clamp anyway, but clamping silently is confusing, so
   we work the limit out here first and say it in words.
 */
-export function AddToCart({ product, onAdded }) {
+export function AddToCart({ product }) {
+  const { openCart } = useUI()
   const cart = useCart()
   const dispatch = useStoreDispatch()
   const inCart = quantityInCart(cart, product.id)
@@ -30,7 +32,8 @@ export function AddToCart({ product, onAdded }) {
     dispatch(addToCart(product, chosen))
     setStatus(`Added ${plural(chosen, 'item')} to your cart.`)
     setQty(1)
-    onAdded?.(chosen)
+    // Show the cart, with this product highlighted, so the shopper sees what happened.
+    openCart(product.id)
   }
 
   let hint = null
