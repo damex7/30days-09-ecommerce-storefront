@@ -1,0 +1,206 @@
+@import "tailwindcss";
+
+/* Dark mode follows <html data-theme="dark">, set by index.html and useTheme */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/*
+  Design tokens. Each one becomes a CSS variable (--color-palm) AND a
+  Tailwind utility (bg-palm, text-ink-soft, border-line, font-display...).
+
+  The look: "adire market". Adire is the indigo resist-dyed cloth of
+  Abẹ́òkúta. Deep indigo for the brand and headings, palm-oil red-orange for
+  actions ("Add to cart", "Place order"), kola-nut gold for price stickers,
+  leaf green for success, all on warm unbleached-calico paper. The tie-dye
+  dot pattern is pure CSS (see the `adire` utility below).
+
+  Dark mode is the market at night: indigo-black cloth, lamplit orange and gold.
+*/
+@theme {
+  --color-paper: #f7f1e5; /* page: calico */
+  --color-panel: #fffcf6; /* cards */
+  --color-panel-2: #efe6d6; /* recessed: inputs, hovers, skeletons */
+  --color-ink: #141a3a; /* main text: indigo-black */
+  --color-ink-soft: #3f4566; /* secondary text */
+  --color-ink-faint: #5a5f80; /* captions (4.5:1+ on paper) */
+  --color-line: #e3d8c3; /* hairlines */
+  --color-line-strong: #857f70; /* input borders (3:1+) */
+
+  --color-indigo: #22306e; /* brand surfaces: header, stepper */
+  --color-indigo-deep: #18224f;
+  --color-indigo-dot: #34448f; /* adire dots on indigo */
+  --color-on-indigo: #f7f1e5;
+  --color-indigo-soft: #e2e5f2;
+  --color-indigo-ink: #22306e; /* indigo used as text */
+
+  --color-palm: #c8461b; /* primary action */
+  --color-palm-hover: #a8380f;
+  --color-on-palm: #ffffff;
+  --color-palm-soft: #fbe3d6;
+  --color-palm-ink: #a3360e; /* palm as text */
+
+  --color-kola: #f0b429; /* price stickers, badges (non-text) */
+  --color-on-kola: #2a1d00;
+  --color-kola-soft: #fbefc9;
+  --color-kola-ink: #7a5200;
+
+  --color-leaf: #2f6b3a; /* success, in stock */
+  --color-leaf-soft: #dcebd8;
+  --color-danger: #b42318;
+  --color-danger-soft: #fde4e1;
+
+  --color-focus: #a3360e; /* focus ring on light surfaces */
+
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Unbounded", "Plus Jakarta Sans", ui-sans-serif, sans-serif;
+  --font-mono: "Source Code Pro", ui-monospace, Consolas, monospace;
+
+  --shadow-card: 0 1px 0 rgb(20 26 58 / 0.05), 0 10px 24px -14px rgb(20 26 58 / 0.3);
+  --shadow-pop: 0 22px 50px -12px rgb(20 26 58 / 0.4);
+
+  --animate-shimmer: shimmer 1.4s ease-in-out infinite;
+  --animate-fade-in: fade-in 200ms ease-out;
+  --animate-slide-up: slide-up 220ms ease-out;
+
+  @keyframes shimmer {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.45;
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* Dark: the same token names with night values, so components never change. */
+[data-theme="dark"] {
+  --color-paper: #0d1130;
+  --color-panel: #151a3e;
+  --color-panel-2: #1f2550;
+  --color-ink: #f3eee3;
+  --color-ink-soft: #c9c8da;
+  --color-ink-faint: #a3a3be;
+  --color-line: #2a3062;
+  --color-line-strong: #737899;
+
+  --color-indigo: #1a2257;
+  --color-indigo-deep: #121842;
+  --color-indigo-dot: #283372;
+  --color-on-indigo: #f3eee3;
+  --color-indigo-soft: #232b60;
+  --color-indigo-ink: #aab6f2;
+
+  --color-palm: #f07a4a;
+  --color-palm-hover: #f6956c;
+  --color-on-palm: #1d0b02; /* dark text: white on light orange fails contrast */
+  --color-palm-soft: #3d1d12;
+  --color-palm-ink: #ff9e77;
+
+  --color-kola: #f5c451;
+  --color-on-kola: #2a1d00;
+  --color-kola-soft: #3a2f10;
+  --color-kola-ink: #f5c451;
+
+  --color-leaf: #7dcc90;
+  --color-leaf-soft: #16341f;
+  --color-danger: #ff8b80;
+  --color-danger-soft: #3f1717;
+
+  --color-focus: #f5c451;
+
+  --shadow-card: 0 1px 0 rgb(0 0 0 / 0.3), 0 12px 26px -14px rgb(0 0 0 / 0.7);
+  --shadow-pop: 0 22px 50px -12px rgb(0 0 0 / 0.7);
+  color-scheme: dark;
+}
+
+/*
+  Adire tie-dye: two offset grids of soft dots drawn with radial gradients.
+  Uses --adire-dot so the same utility works on indigo and on calico.
+*/
+@utility adire {
+  background-color: var(--adire-bg, var(--color-indigo));
+  background-image:
+    radial-gradient(circle at center, var(--adire-dot, var(--color-indigo-dot)) 0 3px, transparent 3.5px),
+    radial-gradient(circle at center, var(--adire-dot, var(--color-indigo-dot)) 0 1.5px, transparent 2px),
+    repeating-linear-gradient(45deg, transparent 0 13px, color-mix(in oklab, var(--adire-dot, var(--color-indigo-dot)) 45%, transparent) 13px 14px);
+  background-size:
+    22px 22px,
+    22px 22px,
+    auto;
+  background-position:
+    0 0,
+    11px 11px,
+    0 0;
+}
+
+/* Surfaces that are indigo get a gold focus ring (palm on indigo is too low-contrast). */
+@utility on-indigo {
+  --color-focus: #f5c451;
+  color: var(--color-on-indigo);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100dvh;
+  }
+  /* One visible focus style everywhere, only for keyboard users. */
+  :focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  /* Headings that receive focus programmatically (step changes) shouldn't show a ring. */
+  [tabindex="-1"]:focus:not(:focus-visible) {
+    outline: none;
+  }
+  ::selection {
+    background: var(--color-kola);
+    color: var(--color-on-kola);
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+  dialog::backdrop {
+    background: rgb(13 17 48 / 0.55);
+    backdrop-filter: blur(2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

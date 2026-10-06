@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en-NG">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#22306e" />
+    <meta
+      name="description"
+      content="Ibi ọjà: a Nigerian online market. Prices in Naira, delivery to all 36 states and the FCT, and pay online, by bank transfer or on delivery."
+    />
+    <title>Ibi ọjà · Shop the market, pay your way</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!--
+      All three fonts were checked for ₦ and the Yoruba letters ẹ ọ ṣ (plus the
+      combining tone marks), so the store name and customers' names never fall
+      back to a different typeface halfway through a word.
+    -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400&family=Source+Code+Pro:wght@400..600&family=Unbounded:wght@500..800&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      // Runs before React so the page never flashes the wrong theme.
+      try {
+        var saved = localStorage.getItem('ibi-oja-theme')
+        var dark = saved === 'dark' || saved === 'light' ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+      } catch (e) {
+        // Storage blocked: follow the OS.
+        document.documentElement.dataset.theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
