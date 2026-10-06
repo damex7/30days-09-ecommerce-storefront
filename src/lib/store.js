@@ -129,6 +129,19 @@ export async function getRelated(product, signal, limit = 8) {
 }
 
 /*
+  Fresh stock levels for the cart, checked just before an order is placed.
+  ttl 0: never from the cache. The cart's snapshots may be hours old, and
+  this is the moment it matters. (A real shop does this on the server, in
+  the same transaction that reserves the stock.)
+*/
+export async function getStockLevels(ids, signal) {
+  const results = await Promise.all(
+    ids.map((id) => request(`${BASE}/products/${encodeURIComponent(id)}?select=stock`, { signal, select: (json) => [id, Math.max(0, Math.floor(Number(json?.stock) || 0))] })),
+  )
+  return Object.fromEntries(results)
+}
+
+/*
   The shop listing. DummyJSON can sort and paginate (limit, skip, sortBy,
   order), but it CAN'T filter by price or rating, and its search endpoint
   ignores the category. So there are two modes:

@@ -50,7 +50,7 @@ export default function Cart() {
         <p className="text-sm text-ink-soft">{plural(totals.itemCount, 'item')}</p>
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_22rem] lg:items-start">
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_22rem] lg:items-start">
         <section aria-label="Items in your cart">
           <UndoBar />
           <ul className="space-y-2 rounded-3xl border border-line bg-panel p-2 sm:p-3">

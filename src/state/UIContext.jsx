@@ -21,7 +21,9 @@ export function UIProvider({ children }) {
 
   // Following a link out of the drawer (Checkout, a product) closes it.
   const { pathname } = useLocation()
-  useEffect(() => setCartOpen(false), [pathname])
+  useEffect(() => {
+    setCartOpen(false)
+  }, [pathname])
 
   const value = useMemo(() => ({ cartOpen, openCart, closeCart, justAddedId }), [cartOpen, openCart, closeCart, justAddedId])
   return <UIContext.Provider value={value}>{children}</UIContext.Provider>

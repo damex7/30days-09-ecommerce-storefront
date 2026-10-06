@@ -16,7 +16,9 @@ export function SearchBar({ className, size = 'md', autoFocus = false }) {
   const id = useId()
 
   // Keep the box in step with the URL when it changes elsewhere (Back button, "Clear filters").
-  useEffect(() => setText(urlQuery), [urlQuery])
+  useEffect(() => {
+    setText(urlQuery)
+  }, [urlQuery])
 
   function submit(e) {
     e.preventDefault()

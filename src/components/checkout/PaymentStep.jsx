@@ -3,7 +3,7 @@ import { fieldId } from './Field.jsx'
 import { Icon } from '../ui/Icon.jsx'
 import { formatNaira } from '../../lib/money.js'
 import { isPodAvailable, podUnavailableMessage } from '../../lib/validation.js'
-import { paystackMode } from '../../lib/paystack.js'
+import { hasRejectedKey, paystackMode } from '../../lib/paystack.js'
 import { BANK_DETAILS } from '../../config.js'
 import { cx } from '../../lib/cx.js'
 
@@ -23,7 +23,7 @@ export function PaymentStep({ values, error, onChange, totalKobo }) {
       icon: 'card',
       title: 'Pay online',
       text: 'Card, bank account or USSD, through Paystack.',
-      badge: mode === 'test' ? 'Paystack test mode' : 'Simulated payment',
+      badge: mode === 'test' ? 'Paystack test mode' : hasRejectedKey() ? 'Simulated: only pk_test_ keys are used' : 'Simulated payment',
     },
     {
       value: 'transfer',

@@ -2,7 +2,13 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js'
 import { useCheckoutDraft } from '../hooks/useCheckoutDraft.js'
-import { useCartTotals } from '../state/StoreContext.jsx'
+import { useCartTotals, useStoreDispatch } from '../state/StoreContext.jsx'
+import { useOrders } from '../state/OrdersContext.jsx'
+import { clearCart, refreshStock } from '../state/storeReducer.js'
+import { getStockLevels } from '../lib/store.js'
+import { buildOrder } from '../lib/orders.js'
+import { payWithPaystack, paystackMode } from '../lib/paystack.js'
+import { SimulatedPayment } from '../components/checkout/SimulatedPayment.jsx'
 import { STEPS, firstInvalidStep, isPodAvailable, podUnavailableMessage } from '../lib/validation.js'
 import { formatNaira } from '../lib/money.js'
 import { Stepper } from '../components/checkout/Stepper.jsx'
@@ -35,12 +41,21 @@ const parseStep = (v) => (['1', '2', '3'].includes(v) ? Number(v) : 1)
 export default function Checkout() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const { values, setField, setValues } = useCheckoutDraft()
+  const { values, setField, setValues, clear: clearDraft } = useCheckoutDraft()
   const totals = useCartTotals(values.state || null)
   const [errors, setErrors] = useState({})
   const [announcement, setAnnouncement] = useState('')
   const [focusTarget, setFocusTarget] = useState(null)
   const headingRef = useRef(null)
+  const dispatch = useStoreDispatch()
+  const { addOrder } = useOrders()
+  const [placing, setPlacing] = useState(false)
+  const [placeError, setPlaceError] = useState('')
+  const [simRequest, setSimRequest] = useState(null)
+  const attempt = useRef(0)
+  // Set once an order is placed. From then on this page is on its way out: it must not
+  // "correct" the URL back to step 1 (the draft was just cleared) or flash the empty-cart message.
+  const placedRef = useRef(false)
 
   const requested = parseStep(params.get('step'))
   const blocking = firstInvalidStep(values)
@@ -50,7 +65,7 @@ export default function Checkout() {
 
   // Asked for a step you can't be on yet: correct the URL to match what's shown.
   useEffect(() => {
-    if (step !== requested) navigate(`/checkout?step=${step}`, { replace: true })
+    if (!placedRef.current && step !== requested) navigate(`/checkout?step=${step}`, { replace: true })
   }, [step, requested, navigate])
 
   // Move focus after the render that shows the new step or the errors.
@@ -101,7 +116,10 @@ export default function Checkout() {
       setFocusTarget({ field: broken[0] })
       return
     }
-    if (step === 3) return // Placing the order arrives with payments.
+    if (step === 3) {
+      placeOrder()
+      return
+    }
 
     // Changed the state to one without pay-on-delivery? Clear that choice and say why on the next step.
     if (step === 1 && values.paymentMethod === 'pod' && !isPodAvailable(values.state)) {
@@ -112,6 +130,85 @@ export default function Checkout() {
     goTo(step + 1)
   }
 
+  /** Opens the stand-in payment dialog and waits for Approve or Cancel. */
+  function simulatePayment({ amountKobo, email }) {
+    return new Promise((resolve) =>
+      setSimRequest({
+        amountKobo,
+        email,
+        resolve: (result) => {
+          setSimRequest(null)
+          resolve(result)
+        },
+      }),
+    )
+  }
+
+  /*
+    Placing an order, in order:
+    1. Re-check every step (another tab could have changed the draft).
+    2. Re-check stock with fresh numbers from the API.
+    3. Take payment (online only); a cancelled payment places nothing.
+    4. Save the receipt, then empty the cart and go to the confirmation.
+  */
+  async function placeOrder() {
+    if (placing) return
+    setPlaceError('')
+    const bad = firstInvalidStep(values)
+    if (bad) {
+      goTo(bad, STEPS[bad - 1].validate(values))
+      return
+    }
+
+    setPlacing(true)
+    try {
+      const stock = await getStockLevels(totals.lines.map((l) => l.id))
+      const short = totals.lines.filter((l) => l.qty > stock[l.id])
+      if (short.length) {
+        dispatch(refreshStock(stock))
+        const what = short.map((l) => (stock[l.id] === 0 ? `${l.product.title} has sold out` : `only ${stock[l.id]} of ${l.product.title} left`))
+        setPlaceError(`Stock changed while you were shopping: ${what.join('; ')}. We’ve updated your cart. Check the total, then place your order again.`)
+        return
+      }
+
+      let payment
+      if (values.paymentMethod === 'online') {
+        // A new reference for every attempt: Paystack rejects a reused one after a cancelled try.
+        attempt.current += 1
+        const args = {
+          email: values.email.trim(),
+          amountKobo: totals.totalKobo,
+          reference: `${values.reference}-${attempt.current}`,
+          metadata: { order_number: values.reference },
+        }
+        const mode = paystackMode()
+        const result = mode === 'test' ? await payWithPaystack(args) : await simulatePayment(args)
+        if (result.status !== 'success') {
+          setPlaceError('Payment cancelled, so your order hasn’t been placed. Try again, or go back and choose another way to pay.')
+          return
+        }
+        // Not "paid": nothing has verified this on a server. See lib/paystack.js.
+        payment = { method: 'online', status: 'paid_unverified', provider: mode === 'test' ? 'paystack-test' : 'simulated', reference: result.reference }
+      } else if (values.paymentMethod === 'transfer') {
+        payment = { method: 'transfer', status: 'awaiting_transfer', provider: null, reference: values.reference }
+      } else {
+        payment = { method: 'pod', status: 'pay_on_delivery', provider: null, reference: '' }
+      }
+
+      const order = buildOrder({ values, totals, payment })
+      placedRef.current = true
+      addOrder(order)
+      navigate(`/order/${order.number}`, { replace: true, state: { justPlaced: true } })
+      dispatch(clearCart())
+      clearDraft()
+    } catch (err) {
+      setPlaceError(`${err.message || 'Something went wrong.'} Your order hasn’t been placed.`)
+    } finally {
+      setPlacing(false)
+    }
+  }
+
+  if (placedRef.current) return null
   if (totals.itemCount === 0) {
     return (
       <EmptyState
@@ -128,8 +225,16 @@ export default function Checkout() {
     )
   }
 
-  const primaryLabel = step === 1 ? 'Continue to payment' : step === 2 ? 'Review order' : 'Place order'
-  const placing = step === 3
+  const onReview = step === 3
+  const primaryLabel = placing
+    ? 'Placing order…'
+    : step === 1
+      ? 'Continue to payment'
+      : step === 2
+        ? 'Review order'
+        : values.paymentMethod === 'online'
+          ? `Pay ${formatNaira(totals.totalKobo)}`
+          : 'Place order'
 
   return (
     <>
@@ -151,7 +256,8 @@ export default function Checkout() {
           </div>
         </details>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_20rem] lg:items-start">
+        {/* grid-cols-1 = minmax(0, 1fr): lets the column shrink below long, non-wrapping content. */}
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_20rem] lg:items-start">
           <form id={FORM_ID} onSubmit={handleContinue} noValidate className="rounded-3xl border border-line bg-panel p-4 sm:p-6">
             <p className="font-mono text-xs font-semibold tracking-widest text-palm-ink uppercase">
               Step {step} of {STEPS.length}
@@ -188,13 +294,24 @@ export default function Checkout() {
                   button's own inline-flex would override "hidden".) */}
               <div className="hidden lg:block">
                 <Button type="submit" size="lg" disabled={placing}>
-                  {placing && <Icon name="lock" className="size-5" />}
+                  {onReview && <Icon name="lock" className="size-5" />}
                   {primaryLabel}
-                  {!placing && <Icon name="arrow" className="size-5" />}
+                  {!onReview && <Icon name="arrow" className="size-5" />}
                 </Button>
               </div>
             </div>
-            {placing && <p className="mt-3 text-right text-sm text-ink-faint">Payment and placing orders come next.</p>}
+            {placeError && (
+              <p role="alert" className="mt-4 flex items-start gap-2 rounded-xl bg-danger-soft px-3.5 py-3 text-sm font-bold text-danger">
+                <Icon name="alert" className="mt-0.5 size-4 shrink-0" />
+                {placeError}
+              </p>
+            )}
+            {onReview && (
+              <p className="mt-3 flex items-start gap-1.5 text-xs text-ink-faint lg:justify-end">
+                <Icon name="lock" className="mt-0.5 size-3.5 shrink-0" />
+                Demo shop: no real money is taken.
+              </p>
+            )}
           </form>
 
           <aside aria-label="Order summary" className="hidden rounded-3xl border border-line bg-panel p-5 lg:sticky lg:top-24 lg:block">
@@ -219,6 +336,8 @@ export default function Checkout() {
           </Button>
         </div>
       </div>
+
+      <SimulatedPayment request={simRequest} />
     </>
   )
 }

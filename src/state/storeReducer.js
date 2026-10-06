@@ -37,6 +37,7 @@ export const ACTIONS = {
   UNDO_REMOVE: 'cart/undoRemove',
   DISMISS_UNDO: 'cart/dismissUndo',
   CLEAR_CART: 'cart/clear',
+  REFRESH_STOCK: 'cart/refreshStock',
   APPLY_PROMO: 'promo/apply',
   REMOVE_PROMO: 'promo/remove',
   TOGGLE_WISHLIST: 'wishlist/toggle',
@@ -71,6 +72,8 @@ export const removeFromCart = (id) => ({ type: ACTIONS.REMOVE_FROM_CART, id })
 export const undoRemove = () => ({ type: ACTIONS.UNDO_REMOVE })
 export const dismissUndo = () => ({ type: ACTIONS.DISMISS_UNDO })
 export const clearCart = () => ({ type: ACTIONS.CLEAR_CART })
+/** stockById: { [productId]: latest stock }, from a fresh check just before placing an order. */
+export const refreshStock = (stockById) => ({ type: ACTIONS.REFRESH_STOCK, stockById })
 export const applyPromo = (code) => ({ type: ACTIONS.APPLY_PROMO, code })
 export const removePromo = () => ({ type: ACTIONS.REMOVE_PROMO })
 export const toggleWishlist = (product) => ({ type: ACTIONS.TOGGLE_WISHLIST, product: toSnapshot(product) })
@@ -140,6 +143,18 @@ export function storeReducer(state, action) {
 
     case ACTIONS.CLEAR_CART:
       return { ...state, cart: [], promoCode: null, lastRemoved: null }
+
+    case ACTIONS.REFRESH_STOCK: {
+      // Update each line's stock, lower quantities that are now too high, drop sold-out lines.
+      const cart = state.cart
+        .map((line) => {
+          const stock = action.stockById[line.id]
+          if (stock == null) return line
+          return { ...line, qty: Math.min(line.qty, stock), product: { ...line.product, stock } }
+        })
+        .filter((line) => line.qty > 0)
+      return { ...state, cart }
+    }
 
     case ACTIONS.APPLY_PROMO: {
       // The component checks the code and shows the error; the reducer just refuses unknown codes.

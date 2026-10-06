@@ -11,6 +11,8 @@ const VARIANTS = {
   outline: 'border border-line-strong bg-panel text-ink hover:bg-panel-2',
   ghost: 'text-ink-soft hover:bg-panel-2 hover:text-ink',
   danger: 'text-danger hover:bg-danger-soft',
+  // WhatsApp's green, darkened to keep white text above 4.5:1 contrast.
+  whatsapp: 'bg-[#1f7a43] text-white hover:bg-[#17633a] shadow-card',
 }
 const SIZES = {
   sm: 'min-h-9 px-3 text-sm gap-1.5',

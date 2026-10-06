@@ -11,7 +11,9 @@ import { cx } from '../../lib/cx.js'
 export function QuantityPicker({ value, onChange, max, min = 1, label = 'Quantity', showLabel = false, size = 'md', title }) {
   const id = useId()
   const [draft, setDraft] = useState(String(value))
-  useEffect(() => setDraft(String(value)), [value])
+  useEffect(() => {
+    setDraft(String(value))
+  }, [value])
 
   const clamp = (n) => Math.max(min, Math.min(max, n))
   function commit() {

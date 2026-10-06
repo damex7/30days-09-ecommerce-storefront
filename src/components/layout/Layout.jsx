@@ -23,8 +23,12 @@ const NAV = [
 export function Layout() {
   // A new page starts at the top. (Only on path changes: ticking a filter on
   // /shop changes the query string and shouldn't throw you back to the top.)
+  // Braces matter here: newer browsers make scrollTo() return a Promise, and
+  // anything an effect returns, React later calls as its cleanup function.
   const { pathname } = useLocation()
-  useEffect(() => window.scrollTo(0, 0), [pathname])
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
 
   return (
     <div className="flex min-h-dvh flex-col">
