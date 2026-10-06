@@ -35,7 +35,8 @@ export function Layout() {
         Skip to content
       </a>
 
-      <header className="adire on-indigo sticky top-0 z-30 shadow-card">
+      {/* Sticky from tablets up. On a 360px phone a sticky header would eat a quarter of the screen. */}
+      <header className="adire on-indigo z-30 shadow-card md:sticky md:top-0">
         <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-2.5 sm:gap-4">
           <Link to="/" className="flex shrink-0 items-center gap-2 rounded-lg">
             <LogoMark />

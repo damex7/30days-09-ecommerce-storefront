@@ -180,6 +180,10 @@
   [tabindex="-1"]:focus:not(:focus-visible) {
     outline: none;
   }
+  /* Anything we scroll or focus into view clears the sticky header. */
+  :where(input, select, textarea, button, h1, h2, [id]) {
+    scroll-margin-top: 6rem;
+  }
   ::selection {
     background: var(--color-kola);
     color: var(--color-on-kola);

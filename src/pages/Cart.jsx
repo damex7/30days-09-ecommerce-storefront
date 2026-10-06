@@ -79,10 +79,12 @@ export default function Cart() {
           <h2 className="font-display text-lg font-bold">Order summary</h2>
           <PromoCode totals={totals} />
           <CartSummary totals={totals} />
-          <Link to="/checkout" className={buttonClass('primary', 'lg', 'hidden w-full lg:flex')}>
-            <Icon name="lock" className="size-5" />
-            Go to checkout
-          </Link>
+          <div className="hidden lg:block">
+            <Link to="/checkout" className={buttonClass('primary', 'lg', 'w-full')}>
+              <Icon name="lock" className="size-5" />
+              Go to checkout
+            </Link>
+          </div>
         </aside>
       </div>
 
