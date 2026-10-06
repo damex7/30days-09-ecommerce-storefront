@@ -6,6 +6,8 @@ import Product from './pages/Product.jsx'
 import Cart from './pages/Cart.jsx'
 import Checkout from './pages/Checkout.jsx'
 import OrderConfirmation from './pages/OrderConfirmation.jsx'
+import Orders from './pages/Orders.jsx'
+import Wishlist from './pages/Wishlist.jsx'
 import NotFound from './pages/NotFound.jsx'
 import { OrdersProvider } from './state/OrdersContext.jsx'
 import { StoreProvider } from './state/StoreContext.jsx'
@@ -24,6 +26,8 @@ export default function App() {
               <Route path="cart" element={<Cart />} />
               <Route path="checkout" element={<Checkout />} />
               <Route path="order/:number" element={<OrderConfirmation />} />
+              <Route path="orders" element={<Orders />} />
+              <Route path="wishlist" element={<Wishlist />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>

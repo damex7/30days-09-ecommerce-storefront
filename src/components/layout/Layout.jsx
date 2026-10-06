@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Brand, LogoMark } from './Brand.jsx'
 import { SearchBar } from './SearchBar.jsx'
@@ -6,7 +6,7 @@ import { ThemeToggle } from './ThemeToggle.jsx'
 import { Icon } from '../ui/Icon.jsx'
 import { cx } from '../../lib/cx.js'
 import { STORE_NAME } from '../../config.js'
-import { useStore } from '../../state/StoreContext.jsx'
+import { useStore, useStoreLoadStatus } from '../../state/StoreContext.jsx'
 import { useUI } from '../../state/UIContext.jsx'
 import { CartDrawer } from '../cart/CartDrawer.jsx'
 
@@ -100,6 +100,7 @@ export function Layout() {
       </header>
 
       <main id="main" tabIndex={-1} className="mx-auto w-full max-w-6xl flex-1 px-4 pt-6 pb-16 outline-none">
+        <SavedDataNotice />
         <Outlet />
       </main>
 
@@ -152,6 +153,27 @@ function CartButton() {
       <CountBadge count={count} />
       <span className="sr-only">Cart, {count === 1 ? '1 item' : `${count} items`}</span>
     </button>
+  )
+}
+
+/*
+  If the saved cart couldn't be read (corrupted, or edited by hand), say so
+  once instead of silently showing an empty cart. A copy of the unreadable
+  data is kept under "<key>:corrupt-backup" (see lib/storage.js).
+*/
+function SavedDataNotice() {
+  const status = useStoreLoadStatus()
+  const [dismissed, setDismissed] = useState(false)
+  if (status !== 'corrupt' || dismissed) return null
+  return (
+    <div role="status" className="mb-6 flex items-start gap-3 rounded-2xl bg-kola-soft px-4 py-3 text-sm text-kola-ink">
+      <Icon name="info" className="mt-0.5 size-5 shrink-0" />
+      <p className="flex-1 font-bold">We couldn’t read your saved cart and wishlist on this device, so we’ve started fresh.</p>
+      <button type="button" onClick={() => setDismissed(true)} className="-my-1 grid size-9 shrink-0 place-items-center rounded-full hover:bg-panel/50">
+        <Icon name="x" className="size-4" />
+        <span className="sr-only">Dismiss</span>
+      </button>
+    </div>
   )
 }
 
