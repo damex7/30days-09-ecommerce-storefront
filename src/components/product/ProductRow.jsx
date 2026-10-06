@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ProductCard } from './ProductCard.jsx'
+import { WishlistButton } from './WishlistButton.jsx'
 import { CardSkeleton } from './ProductGrid.jsx'
 import { ErrorState } from '../ui/States.jsx'
 import { cx } from '../../lib/cx.js'
@@ -34,7 +35,7 @@ export function ProductRow({ title, products, status = 'success', error, onRetry
         <ul className={TRACK}>
           {products.map((p) => (
             <li key={p.id} className={ITEM}>
-              <ProductCard product={p} />
+              <ProductCard product={p} actions={<WishlistButton product={p} compact />} />
             </li>
           ))}
         </ul>

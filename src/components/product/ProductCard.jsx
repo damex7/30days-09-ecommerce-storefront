@@ -37,7 +37,7 @@ export function ProductCard({ product, actions, headingLevel = 3 }) {
             {product.title}
           </Link>
         </Heading>
-        <Rating value={product.rating} />
+        {product.rating != null && <Rating value={product.rating} />}
         <Price priceKobo={product.priceKobo} wasKobo={product.wasKobo} className="mt-auto pt-1" />
         {product.availability !== 'in' && (
           <p className={cx('text-xs font-bold', out ? 'text-danger' : 'text-kola-ink')}>{stockText(product)}</p>

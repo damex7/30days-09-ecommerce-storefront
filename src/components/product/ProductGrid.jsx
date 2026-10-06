@@ -1,4 +1,5 @@
 import { ProductCard } from './ProductCard.jsx'
+import { WishlistButton } from './WishlistButton.jsx'
 import { Skeleton } from '../ui/States.jsx'
 import { cx } from '../../lib/cx.js'
 
@@ -9,7 +10,7 @@ export function ProductGrid({ products, className, headingLevel }) {
     <ul className={cx(GRID, className)}>
       {products.map((p) => (
         <li key={p.id}>
-          <ProductCard product={p} headingLevel={headingLevel} />
+          <ProductCard product={p} headingLevel={headingLevel} actions={<WishlistButton product={p} compact />} />
         </li>
       ))}
     </ul>

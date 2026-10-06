@@ -5,6 +5,7 @@ import { getCategories, getFeatured } from '../lib/store.js'
 import { formatNaira } from '../lib/money.js'
 import { SearchBar } from '../components/layout/SearchBar.jsx'
 import { ProductRow } from '../components/product/ProductRow.jsx'
+import { RecentlyViewedRow } from '../components/product/RecentlyViewedRow.jsx'
 import { ErrorState, Skeleton } from '../components/ui/States.jsx'
 import { Icon } from '../components/ui/Icon.jsx'
 import { DELIVERY, POD_STATES } from '../config.js'
@@ -34,6 +35,8 @@ export default function Home() {
         onRetry={featured.retry}
         seeAllTo="/shop?sort=rating"
       />
+
+      <RecentlyViewedRow title="Pick up where you left off" />
 
       <section aria-labelledby="cats" className="mt-12">
         <h2 id="cats" className="mb-4 font-display text-xl font-bold sm:text-2xl">
@@ -104,8 +107,8 @@ function Hero() {
         <p className="mt-5 flex items-start gap-2 rounded-2xl bg-kola px-4 py-3 text-sm font-bold text-on-kola">
           <Icon name="truck" className="mt-0.5 size-5 shrink-0" />
           <span>
-            Delivery {formatNaira(lagos)} in Lagos, {formatNaira(DELIVERY.defaultFeeKobo)} elsewhere. Free on orders over{' '}
-            {formatNaira(DELIVERY.freeOverKobo)}.
+            Delivery {formatNaira(lagos)} in Lagos, {formatNaira(DELIVERY.defaultFeeKobo)} elsewhere. Free on orders of{' '}
+            {formatNaira(DELIVERY.freeOverKobo)} or more.
           </span>
         </p>
       </div>

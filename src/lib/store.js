@@ -82,6 +82,16 @@ function normaliseProduct(raw) {
   }
 }
 
+/** A saved snapshot (cart, wishlist, recently viewed) back into the shape a ProductCard needs. */
+export function cardFromSnapshot(s) {
+  return {
+    ...s,
+    categoryName: categoryLabel(s.category),
+    availability: availabilityOf(s.stock),
+    discountPct: s.wasKobo ? Math.round((1 - s.priceKobo / s.wasKobo) * 100) : 0,
+  }
+}
+
 const normaliseList = (json) => ({
   products: (json?.products ?? []).map(normaliseSummary),
   total: Number(json?.total) || 0,
