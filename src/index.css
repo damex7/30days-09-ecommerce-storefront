@@ -188,6 +188,10 @@
   [role="button"]:not([aria-disabled="true"]) {
     cursor: pointer;
   }
+  /* Stop the page behind an open sheet from scrolling (iOS especially). */
+  html:has(dialog[open]) {
+    overflow: hidden;
+  }
   dialog::backdrop {
     background: rgb(13 17 48 / 0.55);
     backdrop-filter: blur(2px);

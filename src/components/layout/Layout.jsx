@@ -1,4 +1,5 @@
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Brand, LogoMark } from './Brand.jsx'
 import { SearchBar } from './SearchBar.jsx'
 import { ThemeToggle } from './ThemeToggle.jsx'
@@ -17,6 +18,11 @@ const NAV = [
   the full width.
 */
 export function Layout() {
+  // A new page starts at the top. (Only on path changes: ticking a filter on
+  // /shop changes the query string and shouldn't throw you back to the top.)
+  const { pathname } = useLocation()
+  useEffect(() => window.scrollTo(0, 0), [pathname])
+
   return (
     <div className="flex min-h-dvh flex-col">
       <a
