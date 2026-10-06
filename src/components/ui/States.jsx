@@ -3,8 +3,8 @@ import { Button } from './Button.jsx'
 import { cx } from '../../lib/cx.js'
 
 /** A grey placeholder block that pulses while content loads. */
-export function Skeleton({ className }) {
-  return <div className={cx('animate-shimmer rounded-lg bg-panel-2', className)} />
+export function Skeleton({ className, ...rest }) {
+  return <div className={cx('animate-shimmer rounded-lg bg-panel-2', className)} {...rest} />
 }
 
 /*

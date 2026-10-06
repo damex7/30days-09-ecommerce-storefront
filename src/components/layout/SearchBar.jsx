@@ -40,18 +40,18 @@ export function SearchBar({ className, size = 'md', autoFocus = false }) {
         enterKeyHint="search"
         className={cx(
           'w-full rounded-full border border-line-strong bg-panel text-ink placeholder:text-ink-faint',
-          big ? 'h-14 pr-32 pl-5 text-base' : 'h-11 pr-12 pl-4 text-sm',
+          big ? 'h-14 pr-16 pl-5 text-base sm:pr-32' : 'h-11 pr-12 pl-4 text-sm',
         )}
       />
       <button
         type="submit"
         className={cx(
           'absolute top-1/2 right-1.5 flex -translate-y-1/2 items-center gap-2 rounded-full bg-palm font-bold text-on-palm transition-colors hover:bg-palm-hover',
-          big ? 'h-11 px-5' : 'size-8 justify-center',
+          big ? 'size-11 justify-center sm:w-auto sm:px-5' : 'size-8 justify-center',
         )}
       >
         <Icon name="search" className={big ? 'size-5' : 'size-4'} />
-        <span className={big ? '' : 'sr-only'}>Search</span>
+        <span className={big ? 'sr-only sm:not-sr-only' : 'sr-only'}>Search</span>
       </button>
     </form>
   )
